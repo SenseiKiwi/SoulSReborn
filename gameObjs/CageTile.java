@@ -1,6 +1,7 @@
 package SoulSReborn.gameObjs;
 
 import java.lang.reflect.Method;
+import java.util.Iterator;
 import java.util.logging.Level;
 
 import net.minecraft.entity.EntityList;
@@ -18,6 +19,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.AxisAlignedBB;
+import SoulSReborn.configs.SoulConfig;
 import SoulSReborn.utils.SoulLogger;
 
 public class CageTile extends TileEntity
@@ -83,24 +86,27 @@ public class CageTile extends TileEntity
 				
 				if (tempEnt != null)
 				{
-					if (tier == 1 || tier == 2)
+					if (SoulConfig.maxNumSpawns == 0 || !hasReachedSpawnLimit(tempEnt))
 					{
-						if (isPlayerClose(xCoord, yCoord, zCoord) && canSpawnInLight(tempEnt, xCoord, yCoord, zCoord) && canSpawnInWorld(tempEnt))
+						if (tier == 1 || tier == 2)
+						{
+							if (isPlayerClose(xCoord, yCoord, zCoord) && canSpawnInLight(tempEnt, xCoord, yCoord, zCoord) && canSpawnInWorld(tempEnt))
+								flag = false;
+						}
+						else if (tier == 3)
+						{
+							if (canSpawnInLight(tempEnt, xCoord, yCoord, zCoord) && canSpawnInWorld(tempEnt))
+								flag = false;
+						}
+						else if (tier == 4)
+						{
 							flag = false;
-					}
-					else if (tier == 3)
-					{
-						if (canSpawnInLight(tempEnt, xCoord, yCoord, zCoord) && canSpawnInWorld(tempEnt))
-							flag = false;
-					}
-					else if (tier == 4)
-					{
-						flag = false;
-					}
-					else if (tier == 5)
-					{
-						if (isPowered)
-							flag = false;
+						}
+						else if (tier == 5)
+						{
+							if (isPowered)
+								flag = false;
+						}
 					}
 				}else SoulLogger.log(Level.INFO, "Entity returned null. Please report to dev!");
 				
@@ -124,52 +130,23 @@ public class CageTile extends TileEntity
 				if (!flag)
 				{
 					EntityLiving[] entity = new EntityLiving[maxMobs];
-					for (int i = 0; i < entity.length; i++)
-					{
-						if (entName.equals("Wither Skeleton"))
-						{
-							EntitySkeleton skele = new EntitySkeleton(worldObj);
-							skele.setSkeletonType(1);
-							entity[i] = skele;
-						}
-						else
-							entity[i] = (EntityLiving) EntityList.createEntityByName(entId, worldObj);
-					}
 					
-					if (tier == 1)
-					{
-						entity[0].setLocationAndAngles(xCoord + 3, yCoord, zCoord, worldObj.rand.nextFloat() * 360.0F, 0.0F);
-						entity[1].setLocationAndAngles(xCoord - 3, yCoord, zCoord, worldObj.rand.nextFloat() * 360.0F, 0.0F);
-					}
-					else if (tier == 2 || tier == 3 || tier == 4)
-					{
-						entity[0].setLocationAndAngles(xCoord + 3, yCoord, zCoord, worldObj.rand.nextFloat() * 360.0F, 0.0F);
-						entity[1].setLocationAndAngles(xCoord - 3, yCoord, zCoord, worldObj.rand.nextFloat() * 360.0F, 0.0F);
-						entity[2].setLocationAndAngles(xCoord, yCoord, zCoord + 3, worldObj.rand.nextFloat() * 360.0F, 0.0F);
-						entity[3].setLocationAndAngles(xCoord, yCoord, zCoord - 3, worldObj.rand.nextFloat() * 360.0F, 0.0F);
-					}
-					else if (tier == 5)
-					{
-						int i = worldObj.rand.nextInt(2);
-						int j = worldObj.rand.nextInt(2);
-						
-						if (i == 0)
-							entity[0].setLocationAndAngles(xCoord + 4, yCoord, zCoord + 4, worldObj.rand.nextFloat() * 360.0F, 0.0F);
-						else
-							entity[0].setLocationAndAngles(xCoord - 4, yCoord, zCoord + 4, worldObj.rand.nextFloat() * 360.0F, 0.0F);
-						entity[1].setLocationAndAngles(xCoord + 4, yCoord, zCoord, worldObj.rand.nextFloat() * 360.0F, 0.0F);
-						if (j == 0)
-							entity[2].setLocationAndAngles(xCoord + 4, yCoord, zCoord - 4, worldObj.rand.nextFloat() * 360.0F, 0.0F);
-						else
-							entity[2].setLocationAndAngles(xCoord - 4, yCoord, zCoord - 4, worldObj.rand.nextFloat() * 360.0F, 0.0F);
-						entity[3].setLocationAndAngles(xCoord, yCoord, zCoord - 4, worldObj.rand.nextFloat() * 360.0F, 0.0F);
-						entity[4].setLocationAndAngles(xCoord, yCoord, zCoord + 4, worldObj.rand.nextFloat() * 360.0F, 0.0F);
-						entity[5].setLocationAndAngles(xCoord - 4, yCoord, zCoord, worldObj.rand.nextFloat() * 360.0F, 0.0F);
-					}
+                    for (int i = 0; i < entity.length; i++)
+                    {
+                            if (entName.equals("Wither Skeleton"))
+                            {
+                                    EntitySkeleton skele = new EntitySkeleton(worldObj);
+                                    skele.setSkeletonType(1);
+                                    entity[i] = skele;
+                            }
+                            else
+                            	entity[i] = (EntityLiving) EntityList.createEntityByName(entId, worldObj);
+                    }
+                    
+					SpawnAlgo(entity);
 					
 					for (int i = 0; i < entity.length; i++)
-					{
-						if (!worldObj.checkBlockCollision(entity[i].boundingBox))
+						if (!entity[i].isDead)
 						{
 							if (entity[i] instanceof EntitySlime)
 							{
@@ -192,9 +169,7 @@ public class CageTile extends TileEntity
 							else if (entName.equals("Zombie Pigman"))
 								entity[i].setCurrentItemOrArmor(0, new ItemStack(Item.swordGold));
 							worldObj.spawnEntityInWorld(entity[i]);
-
 						}
-					}
 				}
 			}
 			else
@@ -207,24 +182,24 @@ public class CageTile extends TileEntity
 		switch (tier)
 		{
 			case 1:
-				maxMobs = 2;
-				timerEnd = SecToTick(20);
+				maxMobs = SoulConfig.numMobs[0];
+				timerEnd = SecToTick(SoulConfig.coolDown[0]);
 				break;
 			case 2:
-				maxMobs = 4;
-				timerEnd = SecToTick(10);
+				maxMobs = SoulConfig.numMobs[1];
+				timerEnd = SecToTick(SoulConfig.coolDown[1]);
 				break;
 			case 3:
-				maxMobs = 4;
-				timerEnd = SecToTick(5);
+				maxMobs = SoulConfig.numMobs[2];
+				timerEnd = SecToTick(SoulConfig.coolDown[2]);
 				break;
 			case 4:
-				maxMobs = 4;
-				timerEnd = SecToTick(5);
+				maxMobs = SoulConfig.numMobs[3];
+				timerEnd = SecToTick(SoulConfig.coolDown[3]);
 				break;
 			case 5:
-				maxMobs = 6;
-				timerEnd = SecToTick(2);
+				maxMobs = SoulConfig.numMobs[4];
+				timerEnd = SecToTick(SoulConfig.coolDown[4]);
 				break;
 		}	
 	}
@@ -281,26 +256,51 @@ public class CageTile extends TileEntity
 		return false;	
 	}
 	
-	/**NEEDS TO BE IMPLEMENTED**/
-	/*private boolean hasReachedSpawnLimit(EntityLiving ent, int x, int y, int z)
+	private boolean canSpawnAtCoords(EntityLiving ent)
 	{
-		AxisAlignedBB aabb = AxisAlignedBB.getBoundingBox(x - 16, y - 16, z - 16, x + 16, y + 16, z + 16);
-		List <EntityLiving> entList = worldObj.getEntitiesWithinAABB(ent.getClass(), aabb);
-		Iterator <EntityLiving> iter = entList.iterator();
+		return (worldObj.getCollidingBoundingBoxes(ent, ent.boundingBox).isEmpty() && !worldObj.isAnyLiquid(ent.boundingBox));
+	}
+	
+	private boolean hasReachedSpawnLimit(EntityLiving ent)
+	{
+		AxisAlignedBB aabb = AxisAlignedBB.getBoundingBox(xCoord - 16, yCoord - 16, zCoord - 16, xCoord + 16, yCoord + 16, zCoord + 16);
+		Iterator <EntityLiving> entIter = worldObj.getEntitiesWithinAABB(ent.getClass(), aabb).iterator();
 		int mobCount = 0;
-		while(iter.hasNext())
+		while(entIter.hasNext())
 		{
-			EntityLiving entity = iter.next();
-			if (entity.getEntityData().getBoolean("fromSSR")) //check if mob is same as the one spawned by the cage
+			EntityLiving entity = entIter.next();
+			if (entity.getEntityData().getBoolean("fromSSR"))
 				mobCount += 1;
 		}
-		if (mobCount <= 120)
-			return true;
-		else return false;	
-	}*/
+		if (mobCount <= SoulConfig.maxNumSpawns)
+			return false;
+		else return true;	
+	}
 
 	private int SecToTick(int seconds)
 	{
 		return seconds * 20;
+	}
+	
+	private void SpawnAlgo(EntityLiving[] ents)
+	{
+		for (int i = 0; i < ents.length; i++)
+		{
+			int counter = 0;
+			do
+			{
+				counter += 1;
+				if (counter >= 10)
+				{
+					ents[i].setDead();
+					break;
+				}
+				double x = xCoord + (worldObj.rand.nextDouble() - worldObj.rand.nextDouble()) * 4.0D;
+				double y = yCoord + worldObj.rand.nextInt(3) - 1;
+				double z = zCoord + (worldObj.rand.nextDouble() - worldObj.rand.nextDouble()) * 4.0D;
+				ents[i].setPositionAndRotation(x, y, z, worldObj.rand.nextFloat() * 360.0F, 0.0F);
+			}
+			while (!canSpawnAtCoords(ents[i]) || counter == 5);
+		}
 	}
 }

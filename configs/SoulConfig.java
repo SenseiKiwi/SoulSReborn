@@ -12,9 +12,13 @@ public class SoulConfig
 {
 	public static boolean autoID;
 	public static boolean disallowMobs;
+	public static boolean canAbsorbSpawners;
 	public static int soulShardID;
 	public static int soulCageID;
 	public static int soulStealerID;
+	public static int maxNumSpawns;
+	public static int coolDown[] = new int[5];
+	public static int numMobs[] = new int[5];
 	public static HashMap<String, Boolean> blacklistMap = new HashMap<String, Boolean>();
 	
 	public static void init(File configFile)
@@ -26,35 +30,42 @@ public class SoulConfig
 			config.load();
 			autoID = config.get("IDs", "Enable the mod's dynamic ID system", true).getBoolean(true);
 			disallowMobs = config.get("Misc", "Set soul shards to accept only peaceful mobs", false).getBoolean(false);
-			soulShardID = config.get("IDs", "Soul Shard item ID (ignored if dynamic ID system is on)", 4097).getInt();
-			soulCageID = config.get("IDs", "Soul Cage block ID (ignored if dynamic ID system is on)", 1000).getInt();
+			canAbsorbSpawners = config.get("Misc", "Allow levelling up shards by absorbing vanilla spawners", true).getBoolean(true);
+			maxNumSpawns = config.get("Misc", "The max amount of mobs spawned by Soul Cages that can be alive at once (setting this to 0 sets it to unlimited)", 80).getInt(80);
+			soulShardID = config.get("IDs", "Soul Shard item ID (ignored if dynamic ID system is on)", 4097).getInt(4097);
+			soulCageID = config.get("IDs", "Soul Cage block ID (ignored if dynamic ID system is on)", 1000).getInt(1000);
 			soulStealerID = config.get("IDs", "Soul Stealer enchant ID", 85).getInt();
 			
-			/**Trying to create config for other mod's mobs. Does not work yet.**/
-			/**EDIT will probably change to another method, as this requires other mods 
-			 * to be loaded before mine.**/
-			/*Iterator<String> entIter = EntityList.stringToClassMapping.keySet().iterator();
-			while (entIter.hasNext())
+			coolDown[0] = config.get("Tier 1 Settings", "Cool-down (in seconds)", 20).getInt(20);
+			numMobs[0] = config.get("Tier 1 Settings", "Number of mobs to spawn", 2).getInt(2);
+			coolDown[1] = config.get("Tier 2 Settings", "Cool-down (in seconds)", 10).getInt(10);
+			numMobs[1] = config.get("Tier 2 Settings", "Number of mobs to spawn", 4).getInt(4);
+			coolDown[2] = config.get("Tier 3 Settings", "Cool-down (in seconds)", 5).getInt(5);
+			numMobs[2] = config.get("Tier 3 Settings", "Number of mobs to spawn", 4).getInt(4);
+			coolDown[3] = config.get("Tier 4 Settings", "Cool-down (in seconds)", 5).getInt(5);
+			numMobs[3] = config.get("Tier 4 Settings", "Number of mobs to spawn", 4).getInt(4);
+			coolDown[4] = config.get("Tier 5 Settings", "Cool-down (in seconds)", 2).getInt(2);
+			numMobs[4] = config.get("Tier 5 Settings", "Number of mobs to spawn", 6).getInt(6);
+			
+			if (maxNumSpawns > 150)
+				maxNumSpawns = 80;
+			
+			for (int i = 0; i < coolDown.length; i++)
 			{
-				String entName = entIter.next();
-				Class ent =  (Class) EntityList.stringToClassMapping.get(entName);
-				boolean isLiving = EntityLiving.class.isAssignableFrom(ent);
-				boolean val;
-				if (entName != null && isLiving)
-				{
-					if (entName.contains("Dragon") || entName.contains("Boss") || entName.equals("Mob"))
-						continue;
-					else
-					{
-						val = config.get("Entity Blacklist", entName, false).getBoolean(false);
-						blacklistMap.put(entName, val);
-					}
-				}
-				else
-					SoulLogger.log(Level.INFO, "Skipping Entity: "+entName);
-				val = config.get("Entity Blacklist", "Wither Skeleton", false).getBoolean(false);
-				blacklistMap.put("Wither Skeleton", val);
-			}*/
+				if (coolDown[i] < 2)
+					coolDown[i] = 2;
+				if (coolDown[i] > 60)
+					coolDown[i] = 60;
+			}
+			
+			for (int i = 0; i < numMobs.length; i++)
+			{
+				if (numMobs[i] < 1)
+					numMobs[i] = 1;
+				if (numMobs[i] > 6)
+					numMobs[i] = 6;
+			}
+
 			for (String string : EntityWhitelist.peacefuls)
 			{
 				boolean val = config.get("Entity Blacklist", string, false).getBoolean(false);
