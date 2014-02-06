@@ -1,17 +1,21 @@
 package SoulSReborn;
 
+import java.io.File;
 import java.util.logging.Level;
 
+import SoulSReborn.configs.MobBlacklist;
 import SoulSReborn.configs.SoulConfig;
 import SoulSReborn.event.EventHandler;
 import SoulSReborn.gameObjs.ObjHandler;
 import SoulSReborn.proxies.CommonProxy;
+import SoulSReborn.utils.DynamicMobMapping;
 import SoulSReborn.utils.SoulLogger;
 import SoulSReborn.utils.SoulPacket;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.Instance;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 
@@ -27,20 +31,31 @@ public class Soul_main
 	@SidedProxy( clientSide = "SoulSReborn.proxies" + ".ClientProxy", serverSide = "SoulSReborn.proxies" + ".CommonProxy" )
 	public static CommonProxy proxy;
 	
+	String configDir;
+	
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event)
 	{
 		SoulLogger.init();
 		SoulLogger.log(Level.INFO, "Loading mod.");
-		SoulConfig.init(event.getSuggestedConfigurationFile());
-		proxy.initRenderers();
-		EventHandler.init();
-		ObjHandler.init();
+		configDir = event.getModConfigurationDirectory() + "/Soul Shards Reborn/";
+		SoulConfig.init(new File(configDir + "Main.cfg"));
 	}
 	 
 	@Mod.EventHandler
 	public void load(FMLInitializationEvent event)
 	{
+		proxy.initRenderers();
+		ObjHandler.init();
+		EventHandler.init();
+	}
+	
+	@Mod.EventHandler
+	public void postInit(FMLPostInitializationEvent event)
+	{
+		DynamicMobMapping.init();
+		SoulLogger.log(Level.INFO, "Mapped a total of "+DynamicMobMapping.entityList.size()+" entities.");
+		MobBlacklist.init(new File(configDir + "Entity Blacklist.cfg"));
 		SoulLogger.log(Level.INFO, "Mod loaded.");
 	}
 }

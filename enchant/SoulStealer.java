@@ -2,15 +2,14 @@ package SoulSReborn.enchant;
 
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnumEnchantmentType;
-import net.minecraft.item.ItemStack;
 
 public class SoulStealer extends Enchantment
 {
 	
 	
-	public SoulStealer(int id, int weight, EnumEnchantmentType type) 
+	public SoulStealer(int id, int weight) 
 	{
-		super(id, weight, type);
+		super(id, weight, EnumEnchantmentType.weapon);
 	}
 	
 	@Override
@@ -23,12 +22,6 @@ public class SoulStealer extends Enchantment
 	public int getMaxEnchantability(int par1)
 	{
 		return this.getMinEnchantability(par1) + 20;
-	}
-	
-	@Override
-	public boolean canApplyAtEnchantingTable(ItemStack stack)
-	{
-		return true;
 	}
 	
 	@Override

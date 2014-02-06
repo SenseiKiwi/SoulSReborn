@@ -1,15 +1,14 @@
 package SoulSReborn.configs;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.logging.Level;
 
 import net.minecraftforge.common.Configuration;
-import SoulSReborn.utils.EntityWhitelist;
 import SoulSReborn.utils.SoulLogger;
 
 public class SoulConfig 
 {
+	public static boolean allowModMobs;
 	public static boolean autoID;
 	public static boolean disallowMobs;
 	public static boolean canAbsorbSpawners;
@@ -19,7 +18,6 @@ public class SoulConfig
 	public static int maxNumSpawns;
 	public static int coolDown[] = new int[5];
 	public static int numMobs[] = new int[5];
-	public static HashMap<String, Boolean> blacklistMap = new HashMap<String, Boolean>();
 	
 	public static void init(File configFile)
 	{
@@ -29,9 +27,10 @@ public class SoulConfig
 		{
 			config.load();
 			autoID = config.get("IDs", "Enable the mod's dynamic ID system", true).getBoolean(true);
-			disallowMobs = config.get("Misc", "Set soul shards to accept only peaceful mobs", false).getBoolean(false);
+			disallowMobs = config.get("Misc", "Set soul shards to accept only peaceful mobs (will be ignored if set to allow non vanilla mobs)", false).getBoolean(false);
 			canAbsorbSpawners = config.get("Misc", "Allow levelling up shards by absorbing vanilla spawners", true).getBoolean(true);
 			maxNumSpawns = config.get("Misc", "The max amount of mobs spawned by Soul Cages that can be alive at once (setting this to 0 sets it to unlimited)", 80).getInt(80);
+			allowModMobs = config.get("Misc", "Allow non vanilla mobs", false).getBoolean(false);
 			soulShardID = config.get("IDs", "Soul Shard item ID (ignored if dynamic ID system is on)", 4097).getInt(4097);
 			soulCageID = config.get("IDs", "Soul Cage block ID (ignored if dynamic ID system is on)", 1000).getInt(1000);
 			soulStealerID = config.get("IDs", "Soul Stealer enchant ID", 85).getInt();
@@ -65,18 +64,8 @@ public class SoulConfig
 				if (numMobs[i] > 6)
 					numMobs[i] = 6;
 			}
-
-			for (String string : EntityWhitelist.peacefuls)
-			{
-				boolean val = config.get("Entity Blacklist", string, false).getBoolean(false);
-				blacklistMap.put(string, val);
-			}
-			for (String string : EntityWhitelist.mobs)
-			{
-				boolean val = config.get("Entity Blacklist", string, false).getBoolean(false);
-				blacklistMap.put(string, val);
-			}
-			SoulLogger.log(Level.INFO, "Loaded configuration files.");
+			
+			SoulLogger.log(Level.INFO, "Loaded Main configuration file.");
 		}
 		catch(Exception e)
 		{

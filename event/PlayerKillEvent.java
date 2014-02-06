@@ -5,7 +5,6 @@ import java.util.logging.Level;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.monster.EntitySkeleton;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -22,23 +21,19 @@ public class PlayerKillEvent
 	@ForgeSubscribe
 	public void playerKillEvent(LivingDeathEvent event)
 	{	
-		if (event.source.getEntity() instanceof EntityPlayer) 
+		if (event.source.getEntity() instanceof EntityPlayer && event.entityLiving instanceof EntityLiving) 
 		{
-			EntityLivingBase ent = event.entityLiving;
-			if (EntityWhitelist.isEntityAccepted((EntityLiving) ent) && ent.getEntityData().getBoolean("fromSSR") != true)
+			EntityLiving ent = (EntityLiving) event.entityLiving;
+			if (EntityWhitelist.isEntityAccepted(ent) && ent.getEntityData().getBoolean("fromSSR") != true)
 			{
 				String username = event.source.getEntity().getEntityName();
 				String mobName = ent.getEntityName();
 				
-				boolean isWither = false;
 				if (mobName.equals("Skeleton"))
 				{
 					EntitySkeleton skele = (EntitySkeleton)ent;
 					if (skele.getSkeletonType() == 1)
-					{
 						mobName = "Wither Skeleton";
-						isWither = true;
-					}
 				}
 				
 				if (InvSearch.hasItem(ObjHandler.soulShard, username, mobName))

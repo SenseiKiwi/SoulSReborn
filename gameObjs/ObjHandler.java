@@ -2,7 +2,6 @@ package SoulSReborn.gameObjs;
 
 import net.minecraft.block.Block;
 import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnumEnchantmentType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import SoulSReborn.configs.SoulConfig;
@@ -19,7 +18,7 @@ public class ObjHandler
 	public static SoulShard soulShard;
 	public static SoulCage soulCage;
 	public static SoulTab soulTab;
-	public static Enchantment soulStealer;
+	public static final Enchantment soulStealer = new SoulStealer(SoulConfig.soulStealerID, 10);
 	public static String[] itemNames = {"Unbound Soul Shard", "Soul Shard", "Soul Shard", "Soul Shard", "Soul Shard", "Soul Shard", "Soul Shard"};
 	public static String[] blockNames = {"Empty Soul Cage", "Inactive Soul Cage", "Active Soul Cage"};
 	
@@ -47,8 +46,7 @@ public class ObjHandler
 			LanguageRegistry.addName(new ItemStack (soulShard, 1, i), itemNames[i]);
 		for (int i = 0; i < blockNames.length; i++)
 			LanguageRegistry.addName(new ItemStack (soulCage, 1, i), blockNames[i]);
-		
-		soulStealer = new SoulStealer(SoulConfig.soulStealerID, 10, EnumEnchantmentType.weapon);
+	
 		soulStealer.setName("Soul Stealer");
 		
 		GameRegistry.addShapedRecipe(new ItemStack(soulCage), "iii", "i i", "iii", 'i', Block.fenceIron);	

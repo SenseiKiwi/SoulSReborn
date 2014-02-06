@@ -20,7 +20,7 @@ public class BreakSpawnerEvent
 			int x = event.x;
 			int y = event.y;
 			int z = event.z;
-			if (event.block.blockID == ObjHandler.soulCage.blockID)
+			if (event.block != null && event.block.blockID == ObjHandler.soulCage.blockID)
 			{
 				CageTile tile = (CageTile) world.getBlockTileEntity(x, y, z);
 				if (tile != null)
