@@ -10,9 +10,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Icon;
-import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import SoulSReborn.render.SoulCageRender;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -101,33 +99,6 @@ public class SoulCage extends BlockMobSpawner
     }
     
     @Override
-    @SideOnly(Side.CLIENT)
-    public int getRenderType()
-    {
-      return SoulCageRender.model;
-    }
-    
-    @Override
-    @SideOnly(Side.CLIENT)
-    public boolean shouldSideBeRendered(IBlockAccess iblockaccess, int x, int y, int z, int side)
-    {
-      return true;
-    }
-    
-    @Override
-    @SideOnly(Side.CLIENT)
-    public boolean renderAsNormalBlock()
-    {
-      return false;
-    }
-    
-    @Override
-    public boolean isOpaqueCube()
-    {
-      return false;
-    }
-    
-    @Override
     public int damageDropped(int par1)
     {
 		return 0;  	
@@ -159,7 +130,7 @@ public class SoulCage extends BlockMobSpawner
 
       for (int i = 0; i < this.icons.length; i++)
       {
-        this.icons[i] = iconRegister.registerIcon(String.format("%s:%s", new Object[] { "SSR".toLowerCase(), textureNames[i]}));
+        this.icons[i] = iconRegister.registerIcon(String.format("%s:%s", new Object[] { "ssr", textureNames[i]}));
       }
     }
 

@@ -45,7 +45,6 @@ public class Soul_main
 	@Mod.EventHandler
 	public void load(FMLInitializationEvent event)
 	{
-		proxy.initRenderers();
 		ObjHandler.init();
 		EventHandler.init();
 	}
