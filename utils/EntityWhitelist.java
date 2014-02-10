@@ -6,7 +6,7 @@ import SoulSReborn.configs.SoulConfig;
 
 public class EntityWhitelist 
 {
-	public static String[] peacefuls = {"Pig", "Chicken", "Cow", "Mooshroom", "Sheep", "Zombie Pigman", "Iron Golem", "Snow Golem", "Villager"};
+	public static String[] peacefuls = {"Pig", "Chicken", "Cow", "Mooshroom", "Sheep", "Zombie Pigman", "Iron Golem", "Snow Golem", "Villager", "Squid"};
 	public static String[] mobs = {"Zombie", "Creeper", "Skeleton", "Spider", "Cave Spider", "Enderman", "Slime", "Magma Cube", "Witch", "Blaze", "Ghast", "Wither Skeleton"};
 	
 	public static boolean isEntityAccepted(EntityLiving ent)

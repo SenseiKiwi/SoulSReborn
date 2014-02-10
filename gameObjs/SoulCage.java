@@ -29,6 +29,16 @@ public class SoulCage extends BlockMobSpawner
 	}
 	
 	@Override
+	public void onBlockAdded(World world, int x, int y, int z) 
+	{
+		if (!world.isRemote)
+		{
+			if (world.getBlockMetadata(x, y, z) != 0)
+				world.setBlockMetadataWithNotify(x, y, z, 0, 2);
+		}
+	}
+	
+	@Override
 	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int par6, float par7, float par8, float par9)
 	{
 		if (!world.isRemote)
@@ -104,21 +114,26 @@ public class SoulCage extends BlockMobSpawner
 		return 0;  	
     }
     
-    @SideOnly(Side.CLIENT)
     @Override
+    @SideOnly(Side.CLIENT)
+    public int idPicked(World par1World, int par2, int par3, int par4)
+    {
+        return this.blockID;
+    }
+    
+    @Override
+    @SideOnly(Side.CLIENT)
     public void getSubBlocks(int id, CreativeTabs par2CreativeTabs, List par3List)
     {
           for(int i = 0; i < 3; i++)
-          {
-                 par3List.add(new ItemStack(id, 1, i));
-          }
+        	  par3List.add(new ItemStack(id, 1, i));
     }
     
     
     @Override
     public Icon getIcon(int side, int meta)
     {
-      return this.icons[meta];
+    	return icons[meta];
     }
     
     @Override
@@ -126,12 +141,9 @@ public class SoulCage extends BlockMobSpawner
     public void registerIcons(IconRegister iconRegister)
     {
       String[] textureNames = { "soulCage", "cageUnlit", "cageLit" };
-      this.icons = new Icon[textureNames.length];
+      icons = new Icon[textureNames.length];
 
       for (int i = 0; i < this.icons.length; i++)
-      {
-        this.icons[i] = iconRegister.registerIcon(String.format("%s:%s", new Object[] { "ssr", textureNames[i]}));
-      }
+    	  icons[i] = iconRegister.registerIcon(String.format("%s:%s", new Object[] { "ssr", textureNames[i]}));
     }
-
 }

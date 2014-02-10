@@ -20,7 +20,7 @@ public class PlayerKillEvent
 {
 	@ForgeSubscribe
 	public void playerKillEvent(LivingDeathEvent event)
-	{	
+	{
 		if (event.source.getEntity() instanceof EntityPlayer && event.entityLiving instanceof EntityLiving) 
 		{
 			EntityLiving ent = (EntityLiving) event.entityLiving;
@@ -28,6 +28,7 @@ public class PlayerKillEvent
 			{
 				String username = event.source.getEntity().getEntityName();
 				String mobName = ent.getEntityName();
+				SoulLogger.log(Level.INFO, "Mobname: "+mobName);
 				
 				if (mobName.equals("Skeleton"))
 				{
@@ -70,7 +71,6 @@ public class PlayerKillEvent
 							else
 								kills += 1;
 							stack.stackTagCompound.setInteger("KillCount", kills);
-							TierHandler(stack);
 						}
 				}
 			}
@@ -80,40 +80,5 @@ public class PlayerKillEvent
 	private int SoulBonus(ItemStack stack)
 	{
 		return EnchantmentHelper.getEnchantmentLevel(ObjHandler.soulStealer.effectId, stack);
-	}
-	
-	private void TierHandler(ItemStack stack)
-	{
-		int kills = stack.stackTagCompound.getInteger("KillCount");
-		int tier = stack.stackTagCompound.getInteger("Tier");
-		if (kills > 0 && kills < 64)
-			stack.setItemDamage(6);
-		else if (kills >= 64 && kills < 128)
-		{
-			stack.stackTagCompound.setInteger("Tier", 1);
-			stack.setItemDamage(5);
-		}
-		else if (kills >= 128 && kills < 256)
-		{
-			stack.stackTagCompound.setInteger("Tier", 2);
-			stack.setItemDamage(4);
-		}
-		else if (kills >= 256 && kills < 512)
-		{
-			stack.stackTagCompound.setInteger("Tier", 3);
-			stack.setItemDamage(3);
-		}
-		else if (kills >= 512 && kills < 1024)
-		{
-			stack.stackTagCompound.setInteger("Tier", 4);
-			stack.setItemDamage(2);
-		}
-		else if (kills == 1024)
-		{
-			stack.stackTagCompound.setInteger("Tier", 5);
-			stack.setItemDamage(1);
-		}
-		else
-			SoulLogger.log(Level.SEVERE, "How did you break this?? Error at TierHandler in " +this.getClass());		
 	}
 }

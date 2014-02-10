@@ -18,7 +18,7 @@ public class ObjHandler
 	public static SoulShard soulShard;
 	public static SoulCage soulCage;
 	public static SoulTab soulTab;
-	public static final Enchantment soulStealer = new SoulStealer(SoulConfig.soulStealerID, 10);
+	public static final Enchantment soulStealer = new SoulStealer(SoulConfig.soulStealerID, SoulConfig.soulStealerWeight);
 	public static String[] itemNames = {"Unbound Soul Shard", "Soul Shard", "Soul Shard", "Soul Shard", "Soul Shard", "Soul Shard", "Soul Shard"};
 	public static String[] blockNames = {"Empty Soul Cage", "Inactive Soul Cage", "Active Soul Cage"};
 	

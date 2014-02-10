@@ -19,7 +19,7 @@ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 
-@Mod(modid = "SSR", name = "Soul Shards Reborn", version = "Alpha 0.4a")
+@Mod(modid = "SSR", name = "Soul Shards Reborn", version = "Alpha 0.5d")
 @NetworkMod(clientSideRequired = true, serverSideRequired = false, 
 		channels = {"SoulShardsReborn"}, packetHandler = SoulPacket.class)
 

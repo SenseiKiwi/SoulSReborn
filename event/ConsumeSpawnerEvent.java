@@ -46,8 +46,6 @@ public class ConsumeSpawnerEvent
 							{  
 								stack.stackTagCompound.setString("EntityType", entity.getEntityName());
                                 stack.stackTagCompound.setString("entId", (String)EntityList.classToStringMapping.get(entity.getClass()));
-                                stack.stackTagCompound.setInteger("KillCount", 0);
-                                stack.stackTagCompound.setInteger("Tier", 0);
 							}
 							
 							if (stack.hasTagCompound() && !stack.stackTagCompound.getString("EntityType").equals("empty"))
@@ -88,29 +86,6 @@ public class ConsumeSpawnerEvent
 			if (kills > 1024)
 				kills = 1024;
 			stack.stackTagCompound.setInteger("KillCount", kills);
-			if (kills >= 128 && kills < 256)
-			{
-				stack.stackTagCompound.setInteger("Tier", 2);
-				damage = 4;
-			}
-			else if (kills >= 256 && kills < 512)
-			{
-				stack.stackTagCompound.setInteger("Tier", 3);
-				damage = 3;
-			}
-			else if (kills >= 512 && kills < 1024)
-			{
-				stack.stackTagCompound.setInteger("Tier", 4);
-				damage = 2;
-			}
-			else if (kills == 1024)
-			{
-				stack.stackTagCompound.setInteger("Tier", 5);
-				damage = 1;
-			}
-			
-			stack.stackTagCompound.setInteger("KillCount", kills);
-			stack.setItemDamage(damage);
 		}
 		return flag;
 	}

@@ -9,7 +9,7 @@ import net.minecraftforge.event.world.BlockEvent;
 import SoulSReborn.gameObjs.CageTile;
 import SoulSReborn.gameObjs.ObjHandler;
 
-public class BreakSpawnerEvent 
+public class BreakSoulCage
 {
 	@ForgeSubscribe
 	public void BreakBlockEvent(BlockEvent.BreakEvent event)

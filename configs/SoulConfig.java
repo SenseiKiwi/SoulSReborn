@@ -15,6 +15,7 @@ public class SoulConfig
 	public static int soulShardID;
 	public static int soulCageID;
 	public static int soulStealerID;
+	public static int soulStealerWeight;
 	public static int maxNumSpawns;
 	public static int coolDown[] = new int[5];
 	public static int numMobs[] = new int[5];
@@ -34,6 +35,7 @@ public class SoulConfig
 			soulShardID = config.get("IDs", "Soul Shard item ID (ignored if dynamic ID system is on)", 4097).getInt(4097);
 			soulCageID = config.get("IDs", "Soul Cage block ID (ignored if dynamic ID system is on)", 1000).getInt(1000);
 			soulStealerID = config.get("IDs", "Soul Stealer enchant ID", 85).getInt();
+			soulStealerWeight = config.get("Misc", "The weight (probability) of the Soul Stealer enchant", 5).getInt(5);
 			
 			coolDown[0] = config.get("Tier 1 Settings", "Cool-down (in seconds)", 20).getInt(20);
 			numMobs[0] = config.get("Tier 1 Settings", "Number of mobs to spawn", 2).getInt(2);
@@ -64,6 +66,9 @@ public class SoulConfig
 				if (numMobs[i] > 6)
 					numMobs[i] = 6;
 			}
+			
+			if (soulStealerWeight > 10 || soulStealerWeight < 1)
+				soulStealerWeight = 5;
 			
 			SoulLogger.log(Level.INFO, "Loaded Main configuration file.");
 		}
