@@ -19,7 +19,7 @@ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 
-@Mod(modid = "SSR", name = "Soul Shards Reborn", version = "Alpha 0.5d")
+@Mod(modid = "SSR", name = "Soul Shards Reborn", version = "Alpha 0.5e")
 @NetworkMod(clientSideRequired = true, serverSideRequired = false, 
 		channels = {"SoulShardsReborn"}, packetHandler = SoulPacket.class)
 
@@ -40,6 +40,7 @@ public class Soul_main
 		SoulLogger.log(Level.INFO, "Loading mod.");
 		configDir = event.getModConfigurationDirectory() + "/Soul Shards Reborn/";
 		SoulConfig.init(new File(configDir + "Main.cfg"));
+
 	}
 	 
 	@Mod.EventHandler

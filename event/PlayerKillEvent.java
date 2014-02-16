@@ -1,7 +1,5 @@
 package SoulSReborn.event;
 
-import java.util.logging.Level;
-
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
@@ -14,7 +12,6 @@ import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import SoulSReborn.gameObjs.ObjHandler;
 import SoulSReborn.utils.EntityWhitelist;
 import SoulSReborn.utils.InvSearch;
-import SoulSReborn.utils.SoulLogger;
 
 public class PlayerKillEvent 
 {
@@ -28,9 +25,8 @@ public class PlayerKillEvent
 			{
 				String username = event.source.getEntity().getEntityName();
 				String mobName = ent.getEntityName();
-				SoulLogger.log(Level.INFO, "Mobname: "+mobName);
 				
-				if (mobName.equals("Skeleton"))
+				if (mobName.equals("Skeleton") && ent instanceof EntitySkeleton)
 				{
 					EntitySkeleton skele = (EntitySkeleton)ent;
 					if (skele.getSkeletonType() == 1)

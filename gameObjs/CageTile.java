@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.logging.Level;
 
+import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.monster.EntityBlaze;
@@ -206,14 +207,12 @@ public class CageTile extends TileEntity
 	
 	private boolean isPlayerClose(int x, int y, int z)
 	{
-		if (worldObj.getClosestPlayer(x, y, z, 16) != null)
-			return true;
-		else return false;
+		return (worldObj.getClosestPlayer(x, y, z, 16) != null);
 	}
 	
 	private boolean canSpawnInLight(EntityLiving ent, int x, int y, int z)
 	{	
-		if (ent instanceof EntityAnimal || ent instanceof EntitySlime || ent instanceof EntityGhast || ent instanceof EntityPigZombie)
+		if (ent instanceof EntityCreature || ent instanceof EntityAnimal || ent instanceof EntitySlime || ent instanceof EntityGhast || ent instanceof EntityPigZombie)
 			return true;
 		else if (ent instanceof EntityMob)
 		{
@@ -229,7 +228,17 @@ public class CageTile extends TileEntity
 	private boolean canSpawnInWorld(EntityLiving ent)
 	{
 		int dimension = worldObj.provider.dimensionId; //-1 Nether, 0 OW, 1 End
-		if (ent instanceof EntityAnimal)
+		
+		if (ent instanceof EntitySkeleton)
+		{
+			EntitySkeleton skele = (EntitySkeleton)ent;
+			if (skele.getSkeletonType() == 1 && dimension == -1)
+				return true;
+			else if (skele.getSkeletonType() == 0 && dimension == 0)
+				return false;
+			else return false;
+		}		
+		else if (ent instanceof EntityAnimal || ent instanceof EntityCreature)
 		{
 			if (dimension == 0)
 				return true;
@@ -253,7 +262,7 @@ public class CageTile extends TileEntity
 				return true;
 			else return false;
 		}
-		return false;	
+		else return false;	
 	}
 	
 	private boolean canSpawnAtCoords(EntityLiving ent)
