@@ -1,9 +1,9 @@
 package SoulSReborn.event;
 
 import net.minecraft.block.Block;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.monster.EntitySkeleton;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -14,6 +14,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import SoulSReborn.configs.SoulConfig;
 import SoulSReborn.gameObjs.ObjHandler;
 import SoulSReborn.utils.EntityWhitelist;
+import SoulSReborn.utils.TierHandling;
 
 public class ConsumeSpawnerEvent 
 {
@@ -24,6 +25,7 @@ public class ConsumeSpawnerEvent
 		World world = player.worldObj;
 		
 		if (!world.isRemote && SoulConfig.canAbsorbSpawners && player != null)
+		{
 			if(player.getHeldItem() != null && player.getHeldItem().getItem() == ObjHandler.soulShard)
 			{
 				ItemStack stack = player.getHeldItem();
@@ -32,8 +34,10 @@ public class ConsumeSpawnerEvent
 					TileEntityMobSpawner spawner = (TileEntityMobSpawner) world.getBlockTileEntity(event.x, event.y, event.z); 
 					if (spawner != null)
 					{
-						String ent = spawner.getSpawnerLogic().getEntityNameToSpawn();
-						EntityLiving entity = getEntity(ent, world);
+						String entId = spawner.getSpawnerLogic().getEntityNameToSpawn();
+						Entity entity = EntityList.createEntityByName(entId, world);
+						spawner.getSpawnerLogic().func_98265_a(entity);
+						
 						if (EntityWhitelist.isEntityAccepted(entity))
 						{
 							if (!stack.hasTagCompound())
@@ -42,51 +46,36 @@ public class ConsumeSpawnerEvent
 								stack.stackTagCompound.setString("EntityType", "empty");
 							}
 							
-							if ((stack.hasTagCompound() && stack.stackTagCompound.getString("EntityType").equals("empty")))
-							{  
-								stack.stackTagCompound.setString("EntityType", entity.getEntityName());
-                                stack.stackTagCompound.setString("entId", (String)EntityList.classToStringMapping.get(entity.getClass()));
-							}
+							NBTTagCompound nbt = stack.stackTagCompound;
+							String nbtName = nbt.getString("EntityType");
+							int kills = nbt.getInteger("KillCount");
 							
-							if (stack.hasTagCompound() && !stack.stackTagCompound.getString("EntityType").equals("empty"))
-								if (!TierHandling(stack, entity.getEntityName()))
-									world.setBlockToAir(event.x, event.y, event.z);
+							if (nbtName.equals("empty") || nbtName.equals(entity.getEntityName()) && kills < TierHandling.getMax(5))
+							{
+								kills += 200;
+								if (kills > 1024)
+									kills = 1024;
+								nbt.setInteger("KillCount", kills);
+								if (nbtName.equals("empty"))
+								{
+									nbt.setString("EntityType", entity.getEntityName());
+	                                nbt.setString("entId", entId);
+	                                EntityLiving entLiv = (EntityLiving)entity;
+	                                ItemStack heldItem = entLiv.getCurrentItemOrArmor(0);
+	                                if (heldItem != null)
+	                                {
+	                                	nbt.setBoolean("HasItem", true);
+	                                	NBTTagCompound nbt2 = new NBTTagCompound();
+	                                	heldItem.writeToNBT(nbt2);
+	                                	nbt.setTag("Item", nbt2);
+	                                }
+								}
+								world.setBlockToAir(event.x, event.y, event.z);
+							}
 						}
 					}
 				}
 			}
-	}
-	
-	private EntityLiving getEntity(String string, World world)
-	{
-		EntityLiving result;
-		if (string.equals("Wither Skeleton"))
-		{
-			EntitySkeleton skele = new EntitySkeleton(world);
-			skele.setSkeletonType(1);
-			result = skele;
 		}
-		else	
-			result = (EntityLiving) EntityList.createEntityByName(string, world);
-		return result;
-	}
-	
-	private boolean TierHandling(ItemStack stack, String entName)
-	{
-		boolean flag = false;
-		String stackEntName = stack.stackTagCompound.getString("EntityType");
-		int kills = stack.stackTagCompound.getInteger("KillCount");
-		int damage = 0;
-		
-		if (!stackEntName.equals(entName) || (!stackEntName.equals("empty") && kills == 1024))
-			flag = true;
-		else
-		{
-			kills += 200;
-			if (kills > 1024)
-				kills = 1024;
-			stack.stackTagCompound.setInteger("KillCount", kills);
-		}
-		return flag;
 	}
 }

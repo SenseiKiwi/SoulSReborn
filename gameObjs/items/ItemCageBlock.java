@@ -26,8 +26,6 @@ public class ItemCageBlock extends ItemBlock
                   case 2:
                 	  name = "Active Soul Cage";
                 	  break;
-                 
-                  default: name = "Dear God what have you done.";
            }
            return getUnlocalizedName() + "." + name;
      }

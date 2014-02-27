@@ -1,8 +1,6 @@
 package SoulSReborn.gameObjs;
 
-import java.lang.reflect.Method;
 import java.util.Iterator;
-import java.util.logging.Level;
 
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityList;
@@ -16,26 +14,24 @@ import net.minecraft.entity.monster.EntityPigZombie;
 import net.minecraft.entity.monster.EntitySkeleton;
 import net.minecraft.entity.monster.EntitySlime;
 import net.minecraft.entity.passive.EntityAnimal;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import SoulSReborn.configs.SoulConfig;
-import SoulSReborn.utils.SoulLogger;
 
 public class CageTile extends TileEntity
 {
-	int maxMobs = 0;
-	int timer = 0;
-	int timer2 = 0;
-	int timerEnd = 0;
-	public int tier = 0;
-	public String entName = "empty";
-	public String entId = "empty";
-	String heldItem = "empty";
-	public boolean isPowered = false;
-	boolean flag = true;
+	int maxMobs;
+	int timer;
+	int timer2;
+	int timerEnd;
+	public int tier;
+	public String entName;
+	public String entId;
+	public boolean isPowered;
+	boolean flag;
+	public ItemStack HeldItem;
 	
 	@Override
 	public void writeToNBT(NBTTagCompound nbt)
@@ -43,10 +39,12 @@ public class CageTile extends TileEntity
 		super.writeToNBT(nbt);
 		nbt.setInteger("Tier", tier);
 		nbt.setString("Entity", entName);
-		nbt.setBoolean("Power", isPowered);
-		nbt.setBoolean("Flag", flag);
 		nbt.setString("entId", entId);
-		nbt.setString("HeldItem", heldItem);
+		nbt.setBoolean("Power", isPowered);
+		NBTTagCompound nbt2 = new NBTTagCompound();
+		if (HeldItem != null)
+			HeldItem.writeToNBT(nbt2);
+		nbt.setTag("Item", nbt2);
 	}
 	
 	@Override
@@ -55,10 +53,9 @@ public class CageTile extends TileEntity
 		super.readFromNBT(nbt);
 		tier = nbt.getInteger("Tier");
 		entName = nbt.getString("Entity");
-		isPowered = nbt.getBoolean("Power");
-		flag = nbt.getBoolean("Flag");
 		entId = nbt.getString("entId");
-		heldItem = nbt.getString("HeldItem");
+		isPowered = nbt.getBoolean("Power");
+		HeldItem = ItemStack.loadItemStackFromNBT(nbt.getCompoundTag("Item"));
 	}
 	
 	@Override
@@ -67,12 +64,14 @@ public class CageTile extends TileEntity
 		if (tier != 0)
 		{
 			if (maxMobs == 0)
-				tierHandler();
-			
-			int metadata = worldObj.getBlockMetadata(xCoord, yCoord, zCoord);
+			{
+				maxMobs = SoulConfig.numMobs[tier - 1];
+				timerEnd = SecToTick(SoulConfig.coolDown[tier - 1]);
+			}
 			
 			if (timer == 20)
 			{
+				int metadata = worldObj.getBlockMetadata(xCoord, yCoord, zCoord);
 				flag = true;
 				timer = 0;
 				EntityLiving tempEnt = null;
@@ -85,41 +84,28 @@ public class CageTile extends TileEntity
 				else
 					tempEnt = (EntityLiving) EntityList.createEntityByName(entId, worldObj);
 				
-				if (tempEnt != null)
+				if (tempEnt != null && (!hasReachedSpawnLimit(tempEnt) || SoulConfig.maxNumSpawns == 0))
 				{
-					if (SoulConfig.maxNumSpawns == 0 || !hasReachedSpawnLimit(tempEnt))
-					{
-						if (tier == 1 || tier == 2)
-						{
-							if (isPlayerClose(xCoord, yCoord, zCoord) && canSpawnInLight(tempEnt, xCoord, yCoord, zCoord) && canSpawnInWorld(tempEnt))
-								flag = false;
-						}
-						else if (tier == 3)
-						{
-							if (canSpawnInLight(tempEnt, xCoord, yCoord, zCoord) && canSpawnInWorld(tempEnt))
-								flag = false;
-						}
-						else if (tier == 4)
-						{
-							flag = false;
-						}
-						else if (tier == 5)
-						{
-							if (isPowered)
-								flag = false;
-						}
-					}
-				}else SoulLogger.log(Level.INFO, "Entity returned null. Please report to dev!");
-				
-				if (!flag && metadata == 1)
-				{
-					worldObj.setBlockMetadataWithNotify(xCoord, yCoord, zCoord, 2, 2);
+					if (SoulConfig.enableRS[tier - 1])
+						flag = isPowered;
+					else flag = true;
+					
+					if (SoulConfig.needPlayer[tier - 1] && flag)
+						flag = isPlayerClose(xCoord, yCoord, zCoord);
+					
+					if (SoulConfig.checkLight[tier - 1] && flag)
+						flag = canSpawnInLight(tempEnt, xCoord, yCoord, zCoord);
 
+					if (SoulConfig.otherWorlds[tier - 1] && flag)
+						flag = canSpawnInWorld(tempEnt);
 				}
-				else if (flag && metadata == 2)
-				{
+				
+				if (flag && metadata == 1)
+					worldObj.setBlockMetadataWithNotify(xCoord, yCoord, zCoord, 2, 2);
+				else if (!flag && metadata == 2)
 					worldObj.setBlockMetadataWithNotify(xCoord, yCoord, zCoord, 1, 2);
-				}
+
+				tempEnt = null; //destroy the object
 			}
 			else
 				timer += 1;
@@ -128,20 +114,20 @@ public class CageTile extends TileEntity
 			{
 				timer2 = 0;
 				
-				if (!flag)
+				if (flag)
 				{
 					EntityLiving[] entity = new EntityLiving[maxMobs];
 					
                     for (int i = 0; i < entity.length; i++)
                     {
-                            if (entName.equals("Wither Skeleton"))
-                            {
-                                    EntitySkeleton skele = new EntitySkeleton(worldObj);
-                                    skele.setSkeletonType(1);
-                                    entity[i] = skele;
-                            }
-                            else
-                            	entity[i] = (EntityLiving) EntityList.createEntityByName(entId, worldObj);
+                    	if (entName.equals("Wither Skeleton"))
+                        {
+                    		EntitySkeleton skele = new EntitySkeleton(worldObj);
+                            skele.setSkeletonType(1);
+                            entity[i] = skele;
+                        }
+                        else
+                        	entity[i] = (EntityLiving) EntityList.createEntityByName(entId, worldObj);
                     }
                     
 					SpawnAlgo(entity);
@@ -150,25 +136,12 @@ public class CageTile extends TileEntity
 						if (!entity[i].isDead)
 						{
 							if (entity[i] instanceof EntitySlime)
-							{
-								try
-								{
-									Class <?> c = EntitySlime.class; 
-									Method method = c.getDeclaredMethod("setSlimeSize", int.class);
-									method.setAccessible(true);
-									method.invoke(entity[i], 1);
-								}
-								catch (Exception e) {SoulLogger.log(Level.INFO, "NSM Exception in slime handling. Please report to dev! " +e.getCause());}
-							}
+								entity[i].getDataWatcher().updateObject(16, new Byte((byte)1));
 							entity[i].getEntityData().setBoolean("fromSSR", true);
 							entity[i].forceSpawn = true;
 							entity[i].func_110163_bv();
-							if (entName.equals("Skeleton"))
-								entity[i].setCurrentItemOrArmor(0, new ItemStack(Item.bow));
-							else if (entName.equals("Wither Skeleton"))
-								entity[i].setCurrentItemOrArmor(0, new ItemStack(Item.swordStone));
-							else if (entName.equals("Zombie Pigman"))
-								entity[i].setCurrentItemOrArmor(0, new ItemStack(Item.swordGold));
+							if (HeldItem != null)
+								entity[i].setCurrentItemOrArmor(0, HeldItem);
 							worldObj.spawnEntityInWorld(entity[i]);
 						}
 				}
@@ -176,33 +149,6 @@ public class CageTile extends TileEntity
 			else
 				timer2 += 1;
 		}
-	}
-		
-	private void tierHandler()
-	{
-		switch (tier)
-		{
-			case 1:
-				maxMobs = SoulConfig.numMobs[0];
-				timerEnd = SecToTick(SoulConfig.coolDown[0]);
-				break;
-			case 2:
-				maxMobs = SoulConfig.numMobs[1];
-				timerEnd = SecToTick(SoulConfig.coolDown[1]);
-				break;
-			case 3:
-				maxMobs = SoulConfig.numMobs[2];
-				timerEnd = SecToTick(SoulConfig.coolDown[2]);
-				break;
-			case 4:
-				maxMobs = SoulConfig.numMobs[3];
-				timerEnd = SecToTick(SoulConfig.coolDown[3]);
-				break;
-			case 5:
-				maxMobs = SoulConfig.numMobs[4];
-				timerEnd = SecToTick(SoulConfig.coolDown[4]);
-				break;
-		}	
 	}
 	
 	private boolean isPlayerClose(int x, int y, int z)
@@ -212,7 +158,7 @@ public class CageTile extends TileEntity
 	
 	private boolean canSpawnInLight(EntityLiving ent, int x, int y, int z)
 	{	
-		if (ent instanceof EntityCreature || ent instanceof EntityAnimal || ent instanceof EntitySlime || ent instanceof EntityGhast || ent instanceof EntityPigZombie)
+		if (ent instanceof EntityAnimal || ent instanceof EntitySlime || ent instanceof EntityGhast || ent instanceof EntityPigZombie)
 			return true;
 		else if (ent instanceof EntityMob)
 		{
@@ -222,7 +168,7 @@ public class CageTile extends TileEntity
 			else
 				return false;
 		}
-		else return false;	
+		else return true;	
 	}
 	
 	private boolean canSpawnInWorld(EntityLiving ent)
@@ -234,8 +180,8 @@ public class CageTile extends TileEntity
 			EntitySkeleton skele = (EntitySkeleton)ent;
 			if (skele.getSkeletonType() == 1 && dimension == -1)
 				return true;
-			else if (skele.getSkeletonType() == 0 && dimension == 0)
-				return false;
+			else if (dimension == 0)
+				return true;
 			else return false;
 		}		
 		else if (ent instanceof EntityAnimal || ent instanceof EntityCreature)
@@ -262,7 +208,7 @@ public class CageTile extends TileEntity
 				return true;
 			else return false;
 		}
-		else return false;	
+		else return true;	
 	}
 	
 	private boolean canSpawnAtCoords(EntityLiving ent)
@@ -299,7 +245,7 @@ public class CageTile extends TileEntity
 			do
 			{
 				counter += 1;
-				if (counter >= 10)
+				if (counter >= 5)
 				{
 					ents[i].setDead();
 					break;
@@ -309,7 +255,7 @@ public class CageTile extends TileEntity
 				double z = zCoord + (worldObj.rand.nextDouble() - worldObj.rand.nextDouble()) * 4.0D;
 				ents[i].setPositionAndRotation(x, y, z, worldObj.rand.nextFloat() * 360.0F, 0.0F);
 			}
-			while (!canSpawnAtCoords(ents[i]) || counter == 5);
+			while (!canSpawnAtCoords(ents[i]) || counter >= 5);
 		}
 	}
 }

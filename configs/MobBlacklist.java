@@ -1,8 +1,9 @@
 package SoulSReborn.configs;
 
 import java.io.File;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 
 import net.minecraftforge.common.Configuration;
@@ -11,8 +12,7 @@ import SoulSReborn.utils.SoulLogger;
 
 public class MobBlacklist 
 {
-	
-	public static HashMap<String, Boolean> map = new HashMap();
+	public static List<String>list = new ArrayList();
 	
 	public static void init(File configFile)
 	{
@@ -26,7 +26,7 @@ public class MobBlacklist
 			{
 				String name = iter.next();
 				boolean val = config.get("Mob Blacklist",  name, false).getBoolean(false);
-				map.put(name, val);
+				if (val) list.add(name);
 			}
 			
 			SoulLogger.log(Level.INFO, "Loaded Entity Blacklist configuration.");

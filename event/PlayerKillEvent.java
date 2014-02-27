@@ -12,6 +12,7 @@ import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import SoulSReborn.gameObjs.ObjHandler;
 import SoulSReborn.utils.EntityWhitelist;
 import SoulSReborn.utils.InvSearch;
+import SoulSReborn.utils.TierHandling;
 
 public class PlayerKillEvent 
 {
@@ -21,10 +22,12 @@ public class PlayerKillEvent
 		if (event.source.getEntity() instanceof EntityPlayer && event.entityLiving instanceof EntityLiving) 
 		{
 			EntityLiving ent = (EntityLiving) event.entityLiving;
-			if (EntityWhitelist.isEntityAccepted(ent) && ent.getEntityData().getBoolean("fromSSR") != true)
+			EntityPlayer player = (EntityPlayer) event.source.getEntity();
+			
+			if (EntityWhitelist.isEntityAccepted(ent) && !ent.getEntityData().getBoolean("fromSSR"))
 			{
-				String username = event.source.getEntity().getEntityName();
 				String mobName = ent.getEntityName();
+				String mobId = EntityList.getEntityString(ent);
 				
 				if (mobName.equals("Skeleton") && ent instanceof EntitySkeleton)
 				{
@@ -33,9 +36,9 @@ public class PlayerKillEvent
 						mobName = "Wither Skeleton";
 				}
 				
-				if (InvSearch.hasItem(ObjHandler.soulShard, username, mobName))
+				if (InvSearch.hasItem(ObjHandler.soulShard, player.username, mobName))
 				{
-					ItemStack stack = InvSearch.invItemStack(ObjHandler.soulShard, username, mobName);
+					ItemStack stack = InvSearch.invItemStack(ObjHandler.soulShard, player.username, mobName);
 					if (stack != null && !stack.hasTagCompound())
 					{
 						stack.setTagCompound(new NBTTagCompound());
@@ -49,25 +52,32 @@ public class PlayerKillEvent
 					if (stack.stackTagCompound.getString("EntityType").equals("empty"))
 					{
 						stack.stackTagCompound.setString("EntityType", mobName);
-						stack.stackTagCompound.setString("entId", (String)EntityList.classToStringMapping.get(ent.getClass()));
+						stack.stackTagCompound.setString("entId", mobId);
+						ItemStack heldItem = ent.getCurrentItemOrArmor(0);
+						if ((!mobName.equals("Zombie") || !mobName.equals("Enderman")) && heldItem != null)
+						{
+							stack.stackTagCompound.setBoolean("HasItem", true);
+							NBTTagCompound nbt2 = new NBTTagCompound();
+							heldItem.writeToNBT(nbt2);
+							stack.stackTagCompound.setTag("Item", nbt2);
+						}
 					}
 					
 					String name = stack.stackTagCompound.getString("EntityType");
 					int kills = stack.stackTagCompound.getInteger("KillCount");
 					
 					if (mobName.equals(name) && kills < 1024)
+					{
+						ItemStack heldItem = player.getHeldItem();
+						if (heldItem != null && SoulBonus(heldItem) != 0)
 						{
-							ItemStack heldItem = InvSearch.heldItem(username);
-							if (heldItem != null && SoulBonus(heldItem) != 0)
-							{
-								kills += SoulBonus(InvSearch.heldItem(username));
-								if (kills > 1024)
-								kills = 1024;
-							}
-							else
-								kills += 1;
-							stack.stackTagCompound.setInteger("KillCount", kills);
+							kills += SoulBonus(heldItem) + 1;
+							kills = kills > TierHandling.getMax(5) ? TierHandling.getMax(5) : kills;
 						}
+						else
+							kills += 1;
+						stack.stackTagCompound.setInteger("KillCount", kills);
+					}
 				}
 			}
 		}

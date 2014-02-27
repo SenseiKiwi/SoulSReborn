@@ -8,9 +8,11 @@ import net.minecraft.client.renderer.texture.IconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Icon;
 import net.minecraft.world.World;
+import SoulSReborn.configs.SoulConfig;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -51,14 +53,17 @@ public class SoulCage extends BlockMobSpawner
 					ItemStack stack = player.getHeldItem();
 					if (stack.hasTagCompound())
 					{
-						int tier = stack.stackTagCompound.getInteger("Tier");
-						String ent = stack.stackTagCompound.getString("EntityType");
-						String entId = stack.stackTagCompound.getString("entId");
+						NBTTagCompound nbt = stack.stackTagCompound;
+						int tier = nbt.getInteger("Tier");
+						String ent = nbt.getString("EntityType");
+						String entId = nbt.getString("entId");
 						if (tier > 0 && !ent.equals("empty") && !entId.equals("empty") && tile.tier == 0)
 						{
 							tile.entName = ent;
 							tile.entId = entId;
 							tile.tier = tier;
+							if (nbt.getBoolean("HasItem"))
+								tile.HeldItem = ItemStack.loadItemStackFromNBT(nbt.getCompoundTag("Item"));
 							if (!player.capabilities.isCreativeMode)
 								stack.stackSize--;
 							world.setBlockMetadataWithNotify(x, y, z, 1, 2);
@@ -73,15 +78,12 @@ public class SoulCage extends BlockMobSpawner
 	@Override
 	public void onNeighborBlockChange(World world, int x, int y, int z, int id) 
 	{
-		CageTile tile = (CageTile) world.getBlockTileEntity(x, y, z);
-		if (tile != null && tile.tier == 5)
+		if (!world.isRemote)
 		{
-			if (world.isBlockIndirectlyGettingPowered(x, y, z))
-				tile.isPowered = true;
-			else
-				tile.isPowered = false;
+			CageTile tile = (CageTile) world.getBlockTileEntity(x, y, z);
+			if (tile != null && (tile.tier != 0 && SoulConfig.enableRS[tile.tier - 1]))
+				tile.isPowered = world.isBlockIndirectlyGettingPowered(x, y, z);
 		}
-			
 	}
 	
 	@Override
@@ -134,6 +136,12 @@ public class SoulCage extends BlockMobSpawner
     public Icon getIcon(int side, int meta)
     {
     	return icons[meta];
+    }
+    
+    @Override
+    public boolean isOpaqueCube()
+    {
+        return false;
     }
     
     @Override

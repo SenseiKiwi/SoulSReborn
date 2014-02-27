@@ -9,8 +9,10 @@ import SoulSReborn.event.EventHandler;
 import SoulSReborn.gameObjs.ObjHandler;
 import SoulSReborn.proxies.CommonProxy;
 import SoulSReborn.utils.DynamicMobMapping;
+import SoulSReborn.utils.EntityWhitelist;
 import SoulSReborn.utils.SoulLogger;
 import SoulSReborn.utils.SoulPacket;
+import SoulSReborn.utils.TierHandling;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.Instance;
 import cpw.mods.fml.common.SidedProxy;
@@ -19,7 +21,7 @@ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 
-@Mod(modid = "SSR", name = "Soul Shards Reborn", version = "Alpha 0.5e")
+@Mod(modid = "SSR", name = "Soul Shards Reborn", version = "Alpha 0.7a")
 @NetworkMod(clientSideRequired = true, serverSideRequired = false, 
 		channels = {"SoulShardsReborn"}, packetHandler = SoulPacket.class)
 
@@ -40,7 +42,8 @@ public class Soul_main
 		SoulLogger.log(Level.INFO, "Loading mod.");
 		configDir = event.getModConfigurationDirectory() + "/Soul Shards Reborn/";
 		SoulConfig.init(new File(configDir + "Main.cfg"));
-
+		TierHandling.init();
+		EntityWhitelist.init();
 	}
 	 
 	@Mod.EventHandler

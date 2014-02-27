@@ -3,7 +3,6 @@ package SoulSReborn.gameObjs;
 import net.minecraft.block.Block;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
 import SoulSReborn.configs.SoulConfig;
 import SoulSReborn.creativeTab.SoulTab;
 import SoulSReborn.enchant.SoulStealer;
@@ -40,7 +39,7 @@ public class ObjHandler
 		
 		GameRegistry.registerItem(soulShard, "SoulShard", "SSR");
 		GameRegistry.registerBlock(soulCage, ItemCageBlock.class, soulCage.getUnlocalizedName().substring(5));
-		TileEntity.addMapping(CageTile.class, "soulCage");
+		GameRegistry.registerTileEntity(CageTile.class, "soulCage");
 		
 		for (int i = 0; i < itemNames.length; i++)
 			LanguageRegistry.addName(new ItemStack (soulShard, 1, i), itemNames[i]);
@@ -49,6 +48,6 @@ public class ObjHandler
 	
 		soulStealer.setName("Soul Stealer");
 		
-		GameRegistry.addShapedRecipe(new ItemStack(soulCage), "iii", "i i", "iii", 'i', Block.fenceIron);	
+		GameRegistry.addShapedRecipe(new ItemStack(soulCage), "iii", "i i", "iii", 'i', Block.fenceIron);
 	}
 }

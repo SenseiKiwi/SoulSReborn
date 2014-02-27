@@ -1,44 +1,84 @@
 package SoulSReborn.utils;
 
-import net.minecraft.entity.EntityLiving;
+import java.util.ArrayList;
+import java.util.List;
+
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
 import SoulSReborn.configs.MobBlacklist;
 import SoulSReborn.configs.SoulConfig;
 
 public class EntityWhitelist 
 {
-	public static String[] peacefuls = {"Pig", "Chicken", "Cow", "Mooshroom", "Sheep", "Zombie Pigman", "Iron Golem", "Snow Golem", "Villager", "Squid"};
-	public static String[] mobs = {"Zombie", "Creeper", "Skeleton", "Spider", "Cave Spider", "Enderman", "Slime", "Magma Cube", "Witch", "Blaze", "Ghast", "Wither Skeleton"};
+	public static List<String> peacefuls = new ArrayList();
+	public static List<String> mobs = new ArrayList();
 	
-	public static boolean isEntityAccepted(EntityLiving ent)
+	public static void init()
+	{
+		peacefuls.add("Pig");
+		peacefuls.add("Chicken");
+		peacefuls.add("Cow");
+		peacefuls.add("Mooshroom");
+		peacefuls.add("Sheep");
+		peacefuls.add("Zombie Pigman");
+		peacefuls.add("Iron Golem");
+		peacefuls.add("Snow Golem");
+		peacefuls.add("Villager");
+		peacefuls.add("Squid");
+		mobs.add("Zombie");
+		mobs.add("Creeper");
+		mobs.add("Skeleton");
+		mobs.add("Spider");
+		mobs.add("Cave Spider");
+		mobs.add("Enderman");
+		mobs.add("Slime");
+		mobs.add("Magma Cube");
+		mobs.add("Witch");
+		mobs.add("Blaze");
+		mobs.add("Ghast");
+		mobs.add("Wither Skeleton");
+	}
+	
+	public static boolean isEntityAccepted(String entName)
 	{
 		boolean result = false;
 		
 		if (!SoulConfig.allowModMobs)
 		{
-			result = cicle(peacefuls, ent);
-			if (!result && !SoulConfig.disallowMobs)
-				result = cicle(mobs, ent);
+			if (!MobBlacklist.list.contains(entName))
+			{
+				result = peacefuls.contains(entName);
+				if (!result && !SoulConfig.disallowMobs)
+					result = mobs.contains(entName);
+			}
 		}
 		else
 		{
-			if (DynamicMobMapping.entityList.contains(ent.getEntityName()) && !MobBlacklist.map.get(ent.getEntityName()))			
+			if (DynamicMobMapping.entityList.contains(entName) && !MobBlacklist.list.contains(entName))			
 				result = true;
 		}
 		return result;
 	}
 	
-	private static boolean cicle(String[] strings, EntityLiving ent)
+	public static boolean isEntityAccepted(Entity ent)
 	{
 		boolean result = false;
-		for (int i = 0; i < strings.length; i++)
+		String name = EntityList.getEntityString(ent);
+
+		if (!SoulConfig.allowModMobs)
 		{
-			boolean isInBlacklist = MobBlacklist.map.get(strings[i]);
-			if (ent.getEntityName().equals(strings[i]) && !isInBlacklist)
+			if (!MobBlacklist.list.contains(name))
 			{
-				result = true;
-				break;
+				result = peacefuls.contains(name);
+				if (!result && !SoulConfig.disallowMobs)
+					result = mobs.contains(name);
 			}
 		}
-		return result;				
+		else
+		{
+			if (DynamicMobMapping.entityList.contains(name) && !MobBlacklist.list.contains(name))			
+				result = true;
+		}
+		return result;
 	}
 }
