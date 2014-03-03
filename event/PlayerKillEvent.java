@@ -66,16 +66,10 @@ public class PlayerKillEvent
 					String name = stack.stackTagCompound.getString("EntityType");
 					int kills = stack.stackTagCompound.getInteger("KillCount");
 					
-					if (mobName.equals(name) && kills < 1024)
+					if (mobName.equals(name) && kills < TierHandling.getMax(5))
 					{
-						ItemStack heldItem = player.getHeldItem();
-						if (heldItem != null && SoulBonus(heldItem) != 0)
-						{
-							kills += SoulBonus(heldItem) + 1;
-							kills = kills > TierHandling.getMax(5) ? TierHandling.getMax(5) : kills;
-						}
-						else
-							kills += 1;
+						kills += getSoulBonus(player.getHeldItem()) + 1;
+						kills = kills > TierHandling.getMax(5) ? TierHandling.getMax(5) : kills;
 						stack.stackTagCompound.setInteger("KillCount", kills);
 					}
 				}
@@ -83,8 +77,8 @@ public class PlayerKillEvent
 		}
 	}
 	
-	private int SoulBonus(ItemStack stack)
+	private int getSoulBonus(ItemStack stack)
 	{
-		return EnchantmentHelper.getEnchantmentLevel(ObjHandler.soulStealer.effectId, stack);
+		return (stack == null) ? 0 : EnchantmentHelper.getEnchantmentLevel(ObjHandler.soulStealer.effectId, stack);
 	}
 }
